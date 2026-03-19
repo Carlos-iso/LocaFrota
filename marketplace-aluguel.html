@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LocaFrota — Aluguel de Veículos e Máquinas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --yellow: #F5C400;
+  --yellow-dark: #D4A900;
+  --black: #0D0D0D;
+  --gray-900: #161616;
+  --gray-800: #222222;
+  --gray-700: #333;
+  --gray-500: #666;
+  --gray-300: #BDBDBD;
+  --gray-100: #F5F5F5;
+  --white: #FFFFFF;
+  --radius: 16px;
+  --radius-sm: 9px;
+  --shadow: 0 4px 20px rgba(0,0,0,0.09);
+  --shadow-lg: 0 10px 40px rgba(0,0,0,0.16);
+  --font-head: 'Bebas Neue', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+  --t: 0.2s cubic-bezier(0.4,0,0.2,1);
+  --bg: #FAFAFA;
+  --surface: #FFFFFF;
+  --text: #161616;
+  --text-muted: #6B6B6B;
+  --border: #E8E8E8;
+  --nav: #0D0D0D;
+}
+.dark {
+  --bg: #0F0F0F;
+  --surface: #1A1A1A;
+  --text: #EBEBEB;
+  --text-muted: #888;
+  --border: #2A2A2A;
+  --nav: #080808;
+}
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.6;
+  transition: background var(--t), color var(--t);
+  min-height: 100vh;
+}
+
+/* TOASTS */
+#toasts {
+  position: fixed; bottom: 24px; right: 24px;
+  z-index: 9999; display: flex; flex-direction: column; gap: 10px;
+  pointer-events: none;
+}
+.toast {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--gray-900); color: #fff;
+  padding: 13px 18px; border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg); font-size: 14px; font-weight: 500;
+  animation: toastIn 0.3s ease;
+  pointer-events: all; max-width: 310px;
+}
+.toast.success { border-left: 3px solid var(--yellow); }
+.toast.error   { border-left: 3px solid #FF4D4D; }
+@keyframes toastIn { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:none; } }
+@keyframes toastOut { to { opacity:0; transform:translateY(-8px); } }
+
+/* NAV */
+nav {
+  background: var(--nav);
+  position: sticky; top: 0; z-index: 200;
+  border-bottom: 2.5px solid var(--yellow);
+}
+.nav-inner {
+  max-width: 1180px; margin: 0 auto;
+  padding: 0 20px; height: 62px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+}
+.logo {
+  font-family: var(--font-head); font-size: 26px; letter-spacing: 1px;
+  color: var(--yellow); cursor: pointer; user-select: none;
+  display: flex; align-items: center; gap: 7px; white-space: nowrap;
+}
+.logo b { color: #fff; font-weight: 400; }
+.nav-links { display: flex; gap: 2px; list-style: none; }
+.nav-links button {
+  background: none; border: none; cursor: pointer;
+  color: var(--gray-300); font-family: var(--font-body);
+  font-size: 14px; font-weight: 600; padding: 8px 13px;
+  border-radius: var(--radius-sm); transition: all var(--t);
+}
+.nav-links button:hover, .nav-links button.act { color: var(--yellow); background: rgba(245,196,0,0.10); }
+.nav-right { display: flex; align-items: center; gap: 10px; }
+.dark-btn {
+  background: none; border: 1.5px solid #333; border-radius: 50%;
+  width: 35px; height: 35px; cursor: pointer; font-size: 15px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--gray-300); transition: all var(--t);
+}
+.dark-btn:hover { border-color: var(--yellow); color: var(--yellow); }
+.hamburger {
+  display: none; background: none; border: none;
+  color: var(--gray-300); font-size: 22px; cursor: pointer; padding: 4px;
+}
+
+/* MOBILE MENU */
+.mob-menu {
+  display: none; position: fixed; inset: 62px 0 0;
+  background: var(--black); z-index: 190;
+  flex-direction: column; padding: 12px 0;
+  border-top: 1px solid #1e1e1e;
+}
+.mob-menu.open { display: flex; }
+.mob-menu button {
+  background: none; border: none; color: #ccc;
+  font-family: var(--font-body); font-size: 16px; font-weight: 600;
+  padding: 16px 24px; cursor: pointer; text-align: left;
+  border-bottom: 1px solid #1e1e1e; transition: color var(--t);
+}
+.mob-menu button:hover { color: var(--yellow); }
+
+/* BUTTONS */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  border-radius: var(--radius-sm); font-family: var(--font-body);
+  font-weight: 700; font-size: 14px; cursor: pointer;
+  transition: all var(--t); white-space: nowrap; border: none;
+}
+.btn-y  { background: var(--yellow); color: var(--black); padding: 10px 18px; }
+.btn-y:hover { background: var(--yellow-dark); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(245,196,0,.28); }
+.btn-o  { background: none; color: var(--text); border: 1.5px solid var(--border); padding: 9px 16px; }
+.btn-o:hover { border-color: var(--yellow); color: var(--yellow); }
+.btn-d  { background: none; color: #FF4D4D; border: 1.5px solid #FF4D4D; padding: 8px 14px; font-size: 13px; }
+.btn-d:hover { background: #FF4D4D; color: #fff; }
+
+/* PAGES */
+main { min-height: calc(100vh - 62px); }
+.page { display: none; }
+.page.on { display: block; }
+.wrap { max-width: 1180px; margin: 0 auto; padding: 32px 20px; }
+
+/* HERO */
+.hero {
+  background: var(--black);
+  padding: 60px 20px 52px; text-align: center; position: relative; overflow: hidden;
+}
+.hero::before {
+  content:'';
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(45deg,transparent,transparent 38px,rgba(245,196,0,.025) 38px,rgba(245,196,0,.025) 76px);
+}
+.hero-inner { position: relative; z-index: 1; max-width: 640px; margin: 0 auto; }
+.hero h1 {
+  font-family: var(--font-head); font-size: clamp(46px,9vw,88px);
+  color: #fff; line-height: .92; margin-bottom: 16px; letter-spacing: .5px;
+}
+.hero h1 em { color: var(--yellow); font-style: normal; display: block; }
+.hero p { color: var(--gray-300); font-size: 16px; margin-bottom: 30px; max-width: 460px; margin-left: auto; margin-right: auto; }
+.search-wrap {
+  display: flex; max-width: 500px; margin: 0 auto;
+  border-radius: 100px; overflow: hidden;
+  box-shadow: 0 0 0 3px rgba(245,196,0,.22);
+}
+.search-wrap input {
+  flex: 1; padding: 15px 22px; border: none; outline: none;
+  font-family: var(--font-body); font-size: 15px; background: #fff; color: #111;
+}
+.search-wrap button {
+  background: var(--yellow); border: none; padding: 0 24px;
+  cursor: pointer; font-size: 18px; font-weight: 700;
+  transition: background var(--t);
+}
+.search-wrap button:hover { background: var(--yellow-dark); }
+
+/* FILTERS */
+.filters { display: flex; gap: 8px; flex-wrap: wrap; padding: 24px 20px 0; max-width: 1180px; margin: 0 auto; }
+.f-btn {
+  display: flex; align-items: center; gap: 7px;
+  padding: 9px 16px; border-radius: 100px;
+  border: 2px solid var(--border); background: var(--bg);
+  color: var(--text); font-family: var(--font-body);
+  font-weight: 600; font-size: 13px; cursor: pointer; transition: all var(--t);
+}
+.f-btn:hover { border-color: var(--yellow); color: var(--yellow); }
+.f-btn.act { background: var(--yellow); border-color: var(--yellow); color: var(--black); }
+
+/* CARDS */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(272px, 1fr));
+  gap: 18px;
+}
+.card {
+  background: var(--surface); border-radius: var(--radius);
+  overflow: hidden; border: 1.5px solid var(--border);
+  transition: all var(--t); cursor: pointer; position: relative;
+}
+.card:hover { transform: translateY(-5px); box-shadow: var(--shadow-lg); border-color: var(--yellow); }
+.card-img {
+  width: 100%; height: 178px;
+  background: linear-gradient(135deg, #111, #2a2a2a);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 50px; position: relative; overflow: hidden;
+}
+.card-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.badge {
+  position: absolute; top: 11px; left: 11px;
+  background: var(--yellow); color: var(--black);
+  font-size: 10.5px; font-weight: 700; padding: 3px 10px;
+  border-radius: 100px; letter-spacing: .4px; text-transform: uppercase;
+}
+.card-body { padding: 15px 16px; }
+.card-name { font-weight: 700; font-size: 15.5px; margin-bottom: 5px; line-height: 1.3; }
+.card-loc {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 13px; color: var(--text-muted);
+}
+.card-foot {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 11px 16px; border-top: 1px solid var(--border);
+}
+.price { font-family: var(--font-head); font-size: 23px; line-height: 1; }
+.price small { font-family: var(--font-body); font-size: 11px; color: var(--text-muted); font-weight: 400; }
+
+/* SKELETON */
+.sk-card { background: var(--surface); border-radius: var(--radius); overflow: hidden; border: 1.5px solid var(--border); }
+.sk { background: linear-gradient(90deg,var(--surface) 25%,var(--border) 50%,var(--surface) 75%); background-size:200% 100%; animation: shimmer 1.3s infinite; border-radius: 6px; }
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+.sk-img { height: 178px; border-radius: 0; }
+.sk-body { padding: 15px 16px; }
+.sk-line { height: 13px; margin-bottom: 10px; }
+.sk-short { width: 55%; }
+.sk-med { width: 80%; }
+
+/* EMPTY */
+.empty { text-align: center; padding: 60px 20px; color: var(--text-muted); grid-column: 1/-1; }
+.empty .ei { font-size: 60px; margin-bottom: 14px; }
+.empty h3 { font-size: 19px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+
+/* FORM */
+.fcard {
+  background: var(--surface); border-radius: var(--radius);
+  padding: 34px; max-width: 580px; margin: 0 auto;
+  border: 1.5px solid var(--border);
+}
+.fcard h2 { font-family: var(--font-head); font-size: 34px; margin-bottom: 5px; }
+.fcard .sub { color: var(--text-muted); font-size: 14px; margin-bottom: 26px; }
+.fg { margin-bottom: 18px; }
+.fg label {
+  display: block; font-weight: 600; font-size: 12px;
+  color: var(--text-muted); margin-bottom: 6px;
+  letter-spacing: .5px; text-transform: uppercase;
+}
+.fi {
+  width: 100%; padding: 11px 15px;
+  border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--bg); color: var(--text);
+  font-family: var(--font-body); font-size: 15px;
+  transition: border-color var(--t), box-shadow var(--t); outline: none;
+  -webkit-appearance: none; appearance: none;
+}
+.fi:focus { border-color: var(--yellow); box-shadow: 0 0 0 3px rgba(245,196,0,.14); }
+.fi::placeholder { color: var(--gray-500); }
+select.fi {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23666' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 13px center; padding-right: 36px;
+}
+.frow { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.upload {
+  border: 2px dashed var(--border); border-radius: var(--radius-sm);
+  padding: 26px; text-align: center; cursor: pointer;
+  transition: all var(--t); position: relative; background: var(--bg);
+}
+.upload:hover { border-color: var(--yellow); background: rgba(245,196,0,.03); }
+.upload input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.upload .ui { font-size: 34px; margin-bottom: 8px; }
+.upload p { font-size: 13px; color: var(--text-muted); }
+.img-prev { width: 100%; height: 170px; object-fit: cover; border-radius: var(--radius-sm); display: none; margin-top: 10px; }
+.factions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 6px; }
+
+/* ADS LIST */
+.ad-list { display: flex; flex-direction: column; gap: 14px; }
+.ad-item {
+  background: var(--surface); border-radius: var(--radius);
+  border: 1.5px solid var(--border);
+  display: flex; align-items: center; gap: 14px; padding: 14px 16px;
+  transition: border-color var(--t);
+}
+.ad-item:hover { border-color: var(--yellow); }
+.ad-thumb {
+  width: 76px; height: 66px; border-radius: var(--radius-sm);
+  flex-shrink: 0; background: var(--gray-800);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px; overflow: hidden; position: relative;
+}
+.ad-thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.ad-info { flex: 1; min-width: 0; }
+.ad-name { font-weight: 700; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ad-meta { font-size: 13px; color: var(--text-muted); margin-top: 1px; }
+.ad-price { font-family: var(--font-head); font-size: 20px; flex-shrink: 0; }
+.ad-acts { display: flex; gap: 8px; flex-shrink: 0; }
+
+/* MODAL */
+.ov {
+  position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 300;
+  display: none; align-items: center; justify-content: center; padding: 16px;
+  backdrop-filter: blur(5px);
+}
+.ov.open { display: flex; }
+.modal {
+  background: var(--surface); border-radius: var(--radius);
+  padding: 28px; max-width: 480px; width: 100%;
+  border: 1.5px solid var(--border); position: relative;
+  animation: mIn .24s cubic-bezier(.4,0,.2,1);
+  max-height: 92vh; overflow-y: auto;
+}
+@keyframes mIn { from{opacity:0;transform:scale(.93) translateY(12px)} to{opacity:1;transform:none} }
+.m-close {
+  position: absolute; top: 14px; right: 14px;
+  background: none; border: none; cursor: pointer;
+  font-size: 20px; color: var(--text-muted); transition: color var(--t); line-height:1;
+}
+.m-close:hover { color: var(--text); }
+.m-thumb {
+  width: 100%; height: 170px; border-radius: var(--radius-sm);
+  object-fit: cover; background: var(--gray-800);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 52px; color: var(--yellow); margin-bottom: 18px;
+  overflow: hidden; position: relative;
+}
+.m-thumb img { position: absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+.m-title { font-family: var(--font-head); font-size: 26px; margin-bottom: 3px; }
+.m-loc { color: var(--text-muted); font-size: 13.5px; margin-bottom: 20px; }
+.summary {
+  background: var(--bg); border-radius: var(--radius-sm);
+  padding: 14px 16px; margin: 16px 0; border: 1.5px solid var(--border);
+  display: none;
+}
+.srow { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 7px; }
+.srow:last-child { margin-bottom: 0; border-top: 1px solid var(--border); padding-top: 10px; margin-top: 4px; font-weight: 700; font-size: 16px; }
+.stotal { font-family: var(--font-head); font-size: 22px; color: var(--yellow); }
+.err-msg { color: #FF4D4D; font-size: 13px; display: none; margin: -6px 0 12px; }
+
+/* RENTS */
+.rent-card {
+  background: var(--surface); border-radius: var(--radius);
+  border: 1.5px solid var(--border); padding: 18px;
+  transition: border-color var(--t);
+}
+.rent-card:hover { border-color: var(--yellow); }
+.r-top { display: flex; align-items: center; gap: 11px; margin-bottom: 14px; }
+.r-icon { font-size: 28px; }
+.r-name { font-weight: 700; font-size: 15px; line-height: 1.3; }
+.r-type { font-size: 12px; color: var(--text-muted); }
+.r-details { display: flex; gap: 18px; flex-wrap: wrap; }
+.r-d { font-size: 13px; color: var(--text-muted); }
+.r-d strong { display: block; color: var(--text); font-size: 15px; }
+.r-badge {
+  display: inline-block; background: rgba(245,196,0,.13);
+  color: #9A7A00; border-radius: 100px;
+  font-size: 11px; font-weight: 700; padding: 3px 10px;
+  letter-spacing: .4px; text-transform: uppercase; margin-top: 12px;
+}
+.dark .r-badge { color: var(--yellow-dark); }
+
+/* SECTION HEADER */
+.sh {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 12px; margin-bottom: 22px;
+}
+.sh h2 { font-family: var(--font-head); font-size: 30px; margin: 0; }
+
+/* FOOTER */
+footer {
+  background: var(--black); color: var(--gray-500);
+  text-align: center; padding: 22px;
+  font-size: 13px; border-top: 2.5px solid var(--yellow);
+  margin-top: 48px;
+}
+footer span { color: var(--yellow); }
+
+/* RESPONSIVE */
+@media (max-width: 660px) {
+  .nav-links { display: none; }
+  .hamburger { display: flex; }
+  .frow { grid-template-columns: 1fr; }
+  .ad-item { flex-wrap: wrap; }
+  .ad-acts { width: 100%; justify-content: flex-end; }
+}
+</style>
+</head>
+<body>
+
+<div id="toasts"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <div class="logo" onclick="go('home')">🚜 LOCA<b>FROTA</b></div>
+    <ul class="nav-links">
+      <li><button onclick="go('home')" id="n-home">Início</button></li>
+      <li><button onclick="go('cadastro')" id="n-cadastro">Anunciar</button></li>
+      <li><button onclick="go('meus')" id="n-meus">Meus Anúncios</button></li>
+      <li><button onclick="go('locacoes')" id="n-locacoes">Minhas Locações</button></li>
+    </ul>
+    <div class="nav-right">
+      <button class="dark-btn" id="dark-btn" onclick="toggleDark()" title="Modo escuro">🌙</button>
+      <button class="hamburger" onclick="toggleMob()">☰</button>
+    </div>
+  </div>
+</nav>
+<div class="mob-menu" id="mob-menu">
+  <button onclick="go('home');closeMob()">🏠 Início</button>
+  <button onclick="go('cadastro');closeMob()">📋 Anunciar Equipamento</button>
+  <button onclick="go('meus');closeMob()">📦 Meus Anúncios</button>
+  <button onclick="go('locacoes');closeMob()">🗓️ Minhas Locações</button>
+</div>
+
+<main>
+
+<!-- HOME -->
+<div class="page on" id="page-home">
+  <div class="hero">
+    <div class="hero-inner">
+      <h1>ALUGUE SEM<em>COMPLICAÇÃO</em></h1>
+      <p>Carros, tratores, empilhadeiras e muito mais. Encontre o equipamento certo pra seu trabalho.</p>
+      <div class="search-wrap">
+        <input type="text" id="q" placeholder="Buscar por nome ou tipo..." oninput="renderCards()" />
+        <button onclick="renderCards()">🔍</button>
+      </div>
+    </div>
+  </div>
+  <div class="filters" id="filters">
+    <button class="f-btn act" data-c="" onclick="setcat(this,'')"><span>🗂️</span> Todos</button>
+    <button class="f-btn" data-c="carro" onclick="setcat(this,'carro')"><span>🚗</span> Carros</button>
+    <button class="f-btn" data-c="trator" onclick="setcat(this,'trator')"><span>🚜</span> Tratores</button>
+    <button class="f-btn" data-c="empilhadeira" onclick="setcat(this,'empilhadeira')"><span>🏗️</span> Empilhadeiras</button>
+    <button class="f-btn" data-c="caminhao" onclick="setcat(this,'caminhao')"><span>🚛</span> Caminhões</button>
+    <button class="f-btn" data-c="maquina" onclick="setcat(this,'maquina')"><span>⚙️</span> Máquinas</button>
+    <button class="f-btn" data-c="outro" onclick="setcat(this,'outro')"><span>📦</span> Outros</button>
+  </div>
+  <div class="wrap" style="padding-top:24px">
+    <div class="grid" id="skeleton" style="display:none">
+      ${[1,2,3,4,5,6].map(()=>`
+      <div class="sk-card">
+        <div class="sk sk-img"></div>
+        <div class="sk-body">
+          <div class="sk sk-line sk-med"></div>
+          <div class="sk sk-line sk-short"></div>
+        </div>
+      </div>`).join('')}
+    </div>
+    <div class="grid" id="cards"></div>
+  </div>
+</div>
+
+<!-- CADASTRO -->
+<div class="page" id="page-cadastro">
+  <div class="wrap">
+    <div class="fcard">
+      <h2>ANUNCIAR EQUIPAMENTO</h2>
+      <p class="sub">Preencha os dados para disponibilizar seu equipamento para aluguel.</p>
+      <div class="fg">
+        <label>Nome do Equipamento *</label>
+        <input type="text" id="f-nome" class="fi" placeholder="Ex: Trator New Holland TM7010" />
+      </div>
+      <div class="frow">
+        <div class="fg">
+          <label>Categoria *</label>
+          <select id="f-tipo" class="fi">
+            <option value="">Selecione...</option>
+            <option value="carro">🚗 Carro</option>
+            <option value="trator">🚜 Trator</option>
+            <option value="empilhadeira">🏗️ Empilhadeira</option>
+            <option value="caminhao">🚛 Caminhão</option>
+            <option value="maquina">⚙️ Máquina Pesada</option>
+            <option value="outro">📦 Outro</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Preço por Dia (R$) *</label>
+          <input type="number" id="f-preco" class="fi" placeholder="0,00" min="0" step="0.01" />
+        </div>
+      </div>
+      <div class="fg">
+        <label>Localização *</label>
+        <input type="text" id="f-local" class="fi" placeholder="Ex: Mossoró - RN" />
+      </div>
+      <div class="fg">
+        <label>Descrição (opcional)</label>
+        <textarea id="f-desc" class="fi" rows="3" style="resize:vertical" placeholder="Descreva o estado, uso recomendado..."></textarea>
+      </div>
+      <div class="fg">
+        <label>Foto do Equipamento</label>
+        <div class="upload" id="upload-box">
+          <input type="file" accept="image/*" onchange="onImg(event)" />
+          <div id="up-ph">
+            <div class="ui">📷</div>
+            <p><strong>Clique para enviar uma foto</strong><br>JPG, PNG ou WEBP (máx. 5MB)</p>
+          </div>
+          <img id="img-prev" class="img-prev" />
+        </div>
+      </div>
+      <div class="factions">
+        <button class="btn btn-o" onclick="go('home')">Cancelar</button>
+        <button class="btn btn-y" onclick="salvar()">✅ Publicar Anúncio</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MEUS ANÚNCIOS -->
+<div class="page" id="page-meus">
+  <div class="wrap">
+    <div class="sh">
+      <h2>MEUS ANÚNCIOS</h2>
+      <button class="btn btn-y" onclick="go('cadastro')">+ Novo Anúncio</button>
+    </div>
+    <div class="ad-list" id="ad-list"></div>
+  </div>
+</div>
+
+<!-- LOCAÇÕES -->
+<div class="page" id="page-locacoes">
+  <div class="wrap">
+    <div class="sh">
+      <h2>MINHAS LOCAÇÕES</h2>
+      <p style="color:var(--text-muted);font-size:14px;margin:0">Histórico dos aluguéis simulados</p>
+    </div>
+    <div class="grid" id="rents"></div>
+  </div>
+</div>
+
+</main>
+
+<!-- MODAL -->
+<div class="ov" id="ov" onclick="outsideClose(event)">
+  <div class="modal" id="modal">
+    <button class="m-close" onclick="closeM()">✕</button>
+    <div class="m-thumb" id="m-thumb"></div>
+    <div class="m-title" id="m-nome"></div>
+    <div class="m-loc" id="m-loc"></div>
+    <div class="frow">
+      <div class="fg">
+        <label>Data de Início *</label>
+        <input type="date" id="r-start" class="fi" onchange="calc()" />
+      </div>
+      <div class="fg">
+        <label>Data de Devolução *</label>
+        <input type="date" id="r-end" class="fi" onchange="calc()" />
+      </div>
+    </div>
+    <div class="err-msg" id="r-err">⚠️ A data de devolução deve ser após a data de início.</div>
+    <div class="summary" id="summary">
+      <div class="srow"><span>Valor por dia</span><span id="s-day"></span></div>
+      <div class="srow"><span>Número de dias</span><span id="s-days"></span></div>
+      <div class="srow"><span>Total estimado</span><span class="stotal" id="s-total"></span></div>
+    </div>
+    <button class="btn btn-y" style="width:100%;padding:14px;font-size:16px;justify-content:center;margin-top:4px" onclick="confirm_rent()">🤝 Confirmar Locação</button>
+  </div>
+</div>
+
+<footer>© 2025 <span>LocaFrota</span> — Marketplace de Aluguel de Equipamentos</footer>
+
+<script>
+// ── Storage helpers ──
+const LS = {
+  get: k => JSON.parse(localStorage.getItem(k)||'[]'),
+  set: (k,v) => localStorage.setItem(k,JSON.stringify(v)),
+};
+
+// ── State ──
+let cat = '', equip = null, imgB64 = '';
+let dark = localStorage.getItem('lf_dark')==='1';
+
+// ── Seed ──
+const SEED = [
+  {id:'s1',nome:'Trator Agrícola New Holland T7',tipo:'trator',preco:350,local:'Mossoró - RN',desc:'Ótimo estado, revisado. Ideal para plantio e colheita.',img:'',e:'🚜',mine:false},
+  {id:'s2',nome:'Caminhão Basculante Mercedes 2426',tipo:'caminhao',preco:480,local:'Natal - RN',desc:'Carga 12t. Documentação em dia.',img:'',e:'🚛',mine:false},
+  {id:'s3',nome:'Empilhadeira Elétrica Toyota 8FBMT25',tipo:'empilhadeira',preco:290,local:'Fortaleza - CE',desc:'Capacidade 2.5t. Bateria nova.',img:'',e:'🏗️',mine:false},
+  {id:'s4',nome:'Ford Ka 2022 — Econômico',tipo:'carro',preco:95,local:'Mossoró - RN',desc:'Ar, direção elétrica. Ótimo para cidade.',img:'',e:'🚗',mine:false},
+  {id:'s5',nome:'Escavadeira Hidráulica CAT 320',tipo:'maquina',preco:750,local:'Recife - PE',desc:'Balde 0.5m³. Operador sob consulta.',img:'',e:'⚙️',mine:false},
+  {id:'s6',nome:'Hilux SW4 4x4 Diesel 2023',tipo:'carro',preco:220,local:'João Pessoa - PB',desc:'Cabine dupla. Ideal para estradas rurais.',img:'',e:'🚗',mine:false},
+];
+if (!localStorage.getItem('lf_seed')) {
+  LS.set('lf_equipamentos', SEED);
+  localStorage.setItem('lf_seed','1');
+}
+
+// ── Labels ──
+const ICONS  = {carro:'🚗',trator:'🚜',empilhadeira:'🏗️',caminhao:'🚛',maquina:'⚙️',outro:'📦'};
+const LABELS = {carro:'Carro',trator:'Trator',empilhadeira:'Empilhadeira',caminhao:'Caminhão',maquina:'Máquina',outro:'Outro'};
+const ico = t => ICONS[t]||'📦';
+const lab = t => LABELS[t]||'Outro';
+const fmt = v => Number(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+
+// ── Dark ──
+function applyDark() {
+  document.body.classList.toggle('dark',dark);
+  document.getElementById('dark-btn').textContent = dark ? '☀️' : '🌙';
+}
+function toggleDark() { dark=!dark; localStorage.setItem('lf_dark',dark?'1':'0'); applyDark(); }
+
+// ── Navigate ──
+function go(page) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  const el = document.getElementById('page-'+page);
+  if (el) el.classList.add('on');
+  ['home','cadastro','meus','locacoes'].forEach(p=>{
+    const b = document.getElementById('n-'+p); if(b) b.classList.toggle('act',p===page);
+  });
+  window.scrollTo(0,0);
+  if (page==='home') renderCards();
+  if (page==='meus') renderAds();
+  if (page==='locacoes') renderRents();
+  if (page==='cadastro') resetForm();
+}
+
+// ── Toast ──
+function toast(msg, type='success') {
+  const el = document.createElement('div');
+  el.className = 'toast '+type;
+  el.innerHTML = `<span>${type==='success'?'✅':'❌'}</span><span>${msg}</span>`;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(()=>{ el.style.animation='toastOut .3s ease forwards'; setTimeout(()=>el.remove(),300); }, 3200);
+}
+
+// ── Category ──
+function setcat(el, c) {
+  cat = c;
+  document.querySelectorAll('.f-btn').forEach(b=>b.classList.remove('act'));
+  el.classList.add('act');
+  renderCards();
+}
+
+// ── Cards ──
+function renderCards() {
+  const sk = document.getElementById('skeleton');
+  const cx = document.getElementById('cards');
+  sk.style.display = 'grid'; cx.innerHTML = '';
+  setTimeout(()=>{
+    sk.style.display = 'none';
+    const q = (document.getElementById('q')?.value||'').toLowerCase().trim();
+    let list = LS.get('lf_equipamentos');
+    if (cat) list = list.filter(e=>e.tipo===cat);
+    if (q)   list = list.filter(e=>
+      e.nome.toLowerCase().includes(q) ||
+      (e.tipo||'').toLowerCase().includes(q) ||
+      (e.local||'').toLowerCase().includes(q)
+    );
+    if (!list.length) {
+      cx.innerHTML = `<div class="empty"><div class="ei">🔍</div><h3>Nada encontrado</h3><p>Tente outro filtro ou busca</p></div>`;
+      return;
+    }
+    cx.innerHTML = list.map(e=>`
+      <div class="card" onclick="openM('${e.id}')">
+        <div class="card-img">
+          ${e.img?`<img src="${e.img}" alt="${e.nome}" />`:''}
+          <span style="z-index:0">${e.e||ico(e.tipo)}</span>
+          <span class="badge">${lab(e.tipo)}</span>
+        </div>
+        <div class="card-body">
+          <div class="card-name">${e.nome}</div>
+          <div class="card-loc">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
+            </svg>
+            ${e.local||'—'}
+          </div>
+        </div>
+        <div class="card-foot">
+          <div class="price">${fmt(e.preco)}<small>/dia</small></div>
+          <button class="btn btn-y" onclick="event.stopPropagation();openM('${e.id}')">Alugar</button>
+        </div>
+      </div>`).join('');
+  }, 550);
+}
+
+// ── Save ──
+function onImg(e) {
+  const f = e.target.files[0]; if(!f) return;
+  if (f.size>5*1024*1024) { toast('Imagem muito grande (máx. 5MB)','error'); return; }
+  const r = new FileReader();
+  r.onload = ev => {
+    imgB64 = ev.target.result;
+    const prev = document.getElementById('img-prev');
+    prev.src = imgB64; prev.style.display = 'block';
+    document.getElementById('up-ph').style.display = 'none';
+  };
+  r.readAsDataURL(f);
+}
+function resetForm() {
+  ['f-nome','f-preco','f-local','f-desc'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  const st = document.getElementById('f-tipo'); if(st) st.value='';
+  imgB64 = '';
+  const prev = document.getElementById('img-prev');
+  const ph   = document.getElementById('up-ph');
+  if (prev) { prev.style.display='none'; prev.src=''; }
+  if (ph) ph.style.display='block';
+}
+function salvar() {
+  const nome  = document.getElementById('f-nome').value.trim();
+  const tipo  = document.getElementById('f-tipo').value;
+  const preco = parseFloat(document.getElementById('f-preco').value);
+  const local = document.getElementById('f-local').value.trim();
+  const desc  = document.getElementById('f-desc').value.trim();
+  if (!nome||!tipo||!preco||!local) { toast('Preencha todos os campos obrigatórios (*)','error'); return; }
+  if (isNaN(preco)||preco<=0) { toast('Informe um preço válido','error'); return; }
+  const list = LS.get('lf_equipamentos');
+  list.unshift({id:'u_'+Date.now(),nome,tipo,preco,local,desc,img:imgB64,e:ico(tipo),mine:true});
+  LS.set('lf_equipamentos',list);
+  toast('Equipamento publicado com sucesso! 🎉');
+  resetForm();
+  go('meus');
+}
+
+// ── Ads ──
+function renderAds() {
+  const el = document.getElementById('ad-list');
+  const mine = LS.get('lf_equipamentos').filter(e=>e.mine);
+  if (!mine.length) {
+    el.innerHTML = `<div class="empty"><div class="ei">📋</div><h3>Você ainda não tem anúncios</h3><p style="margin-bottom:18px">Cadastre seu primeiro equipamento</p><button class="btn btn-y" onclick="go('cadastro')">+ Cadastrar Agora</button></div>`;
+    return;
+  }
+  el.innerHTML = mine.map(e=>`
+    <div class="ad-item">
+      <div class="ad-thumb">
+        ${e.img?`<img src="${e.img}" alt="${e.nome}"/>`:''}
+        <span>${e.e||ico(e.tipo)}</span>
+      </div>
+      <div class="ad-info">
+        <div class="ad-name">${e.nome}</div>
+        <div class="ad-meta">${lab(e.tipo)} · ${e.local}</div>
+      </div>
+      <div class="ad-price">${fmt(e.preco)}<span style="font-family:var(--font-body);font-size:11px;color:var(--text-muted);font-weight:400">/dia</span></div>
+      <div class="ad-acts">
+        <button class="btn btn-d" onclick="delAd('${e.id}')">🗑️ Excluir</button>
+      </div>
+    </div>`).join('');
+}
+function delAd(id) {
+  if (!confirm('Excluir este anúncio?')) return;
+  LS.set('lf_equipamentos', LS.get('lf_equipamentos').filter(e=>e.id!==id));
+  toast('Anúncio excluído');
+  renderAds();
+}
+
+// ── Modal ──
+function openM(id) {
+  equip = LS.get('lf_equipamentos').find(e=>e.id===id);
+  if (!equip) return;
+  document.getElementById('m-nome').textContent = equip.nome;
+  document.getElementById('m-loc').textContent  = '📍 '+(equip.local||'');
+  const th = document.getElementById('m-thumb');
+  th.innerHTML = equip.img
+    ? `<img src="${equip.img}" alt="${equip.nome}" /><span style="font-size:50px;z-index:0">${equip.e||ico(equip.tipo)}</span>`
+    : `<span>${equip.e||ico(equip.tipo)}</span>`;
+  const today = new Date().toISOString().split('T')[0];
+  const rs = document.getElementById('r-start');
+  const re = document.getElementById('r-end');
+  rs.min = today; re.min = today;
+  rs.value = ''; re.value = '';
+  document.getElementById('summary').style.display = 'none';
+  document.getElementById('r-err').style.display   = 'none';
+  document.getElementById('ov').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeM() {
+  document.getElementById('ov').classList.remove('open');
+  document.body.style.overflow = '';
+  equip = null;
+}
+function outsideClose(e) { if (e.target===document.getElementById('ov')) closeM(); }
+function calc() {
+  const s = document.getElementById('r-start').value;
+  const e = document.getElementById('r-end').value;
+  const sum = document.getElementById('summary');
+  const err = document.getElementById('r-err');
+  if (!s||!e) { sum.style.display='none'; err.style.display='none'; return; }
+  const days = Math.round((new Date(e)-new Date(s))/86400000);
+  if (days<=0) { sum.style.display='none'; err.style.display='block'; return; }
+  err.style.display = 'none';
+  document.getElementById('s-day').textContent  = fmt(equip.preco);
+  document.getElementById('s-days').textContent = days+(days===1?' dia':' dias');
+  document.getElementById('s-total').textContent= fmt(days*equip.preco);
+  sum.style.display = 'block';
+}
+function confirm_rent() {
+  const s = document.getElementById('r-start').value;
+  const e = document.getElementById('r-end').value;
+  if (!s||!e) { toast('Selecione as datas de início e devolução','error'); return; }
+  const days = Math.round((new Date(e)-new Date(s))/86400000);
+  if (days<=0) { toast('Data de devolução inválida','error'); return; }
+  const total = days*equip.preco;
+  const list = LS.get('lf_locacoes');
+  list.unshift({
+    id:'r_'+Date.now(),
+    nome:equip.nome, tipo:equip.tipo, local:equip.local, e:equip.e||ico(equip.tipo),
+    preco:equip.preco, start:s, end:e, days, total,
+    data: new Date().toLocaleDateString('pt-BR'),
+  });
+  LS.set('lf_locacoes',list);
+  closeM();
+  toast(`Locação confirmada! Total: ${fmt(total)} 🎉`);
+}
+
+// ── Rents ──
+function renderRents() {
+  const el = document.getElementById('rents');
+  const list = LS.get('lf_locacoes');
+  if (!list.length) {
+    el.innerHTML = `<div class="empty"><div class="ei">🗓️</div><h3>Nenhuma locação ainda</h3><p style="margin-bottom:18px">Explore os equipamentos e faça sua primeira locação!</p><button class="btn btn-y" onclick="go('home')">Ver Equipamentos</button></div>`;
+    return;
+  }
+  el.innerHTML = list.map(r=>`
+    <div class="rent-card">
+      <div class="r-top">
+        <div class="r-icon">${r.e}</div>
+        <div>
+          <div class="r-name">${r.nome}</div>
+          <div class="r-type">${lab(r.tipo)} · ${r.local}</div>
+        </div>
+      </div>
+      <div class="r-details">
+        <div class="r-d">Início<strong>${new Date(r.start+'T12:00:00').toLocaleDateString('pt-BR')}</strong></div>
+        <div class="r-d">Devolução<strong>${new Date(r.end+'T12:00:00').toLocaleDateString('pt-BR')}</strong></div>
+        <div class="r-d">Duração<strong>${r.days} ${r.days===1?'dia':'dias'}</strong></div>
+        <div class="r-d">Total<strong style="color:var(--yellow)">${fmt(r.total)}</strong></div>
+      </div>
+      <span class="r-badge">✅ Confirmado em ${r.data}</span>
+    </div>`).join('');
+}
+
+// ── Mobile ──
+function toggleMob() { document.getElementById('mob-menu').classList.toggle('open'); }
+function closeMob()  { document.getElementById('mob-menu').classList.remove('open'); }
+
+// ── Init ──
+applyDark();
+go('home');
+</script>
+</body>
+</html>
